@@ -2,6 +2,7 @@
 
 Monitor travis-ci builds in your i3-status bar.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/59f026abe8ce42c28426e3728db24cf2)](https://www.codacy.com/app/fehmer/i3-status-travis?utm_source=github.com&utm_medium=referral&utm_content=fehmer/i3-status-travis&utm_campaign=badger)
 [![npm version](https://badge.fury.io/js/i3-status-travis.svg)](https://badge.fury.io/js/i3-status-travis)
 [![Dependency Status](https://gemnasium.com/badges/github.com/fehmer/i3-status-travis.svg)](https://gemnasium.com/github.com/fehmer/i3-status-travis)
 [![Build Status](https://travis-ci.org/fehmer/i3-status-travis.svg?branch=master)](https://travis-ci.org/fehmer/i3-status-travis)
