@@ -2,11 +2,11 @@
 
 Monitor travis-ci builds in your i3-status bar.
 
-[![npm version](https://badge.fury.io/js/i3-status-travis.svg)](https://badge.fury.io/js/i3-status-travis)
-[![Dependency Status](https://gemnasium.com/badges/github.com/fehmer/i3-status-travis.svg)](https://gemnasium.com/github.com/fehmer/i3-status-travis)
-[![Build Status](https://travis-ci.org/fehmer/i3-status-travis.svg?branch=master)](https://travis-ci.org/fehmer/i3-status-travis)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/59f026abe8ce42c28426e3728db24cf2)](https://www.codacy.com/app/fehmer/i3-status-travis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fehmer/i3-status-travis&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/59f026abe8ce42c28426e3728db24cf2)](https://www.codacy.com/app/fehmer/i3-status-travis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fehmer/i3-status-travis&amp;utm_campaign=Badge_Coverage)
+[![npm version](https://img.shields.io/npm/v/i3-status-travis.svg?style=flat-square)](https://www.npmjs.com/package/i3-status-travis)
+[![Dependency Status](https://img.shields.io/gemnasium/fehmer/i3-status-travis.svg?style=flat-square)](https://gemnasium.com/github.com/fehmer/i3-status-travis)
+[![Build Status](https://img.shields.io/travis/fehmer/i3-status-travis.svg?style=flat-square)](https://travis-ci.org/fehmer/i3-status-travis)
+[![Codacy Badge](https://img.shields.io/codacy/grade/59f026abe8ce42c28426e3728db24cf2.svg?style=flat-square)](https://www.codacy.com/app/fehmer/i3-status-travis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fehmer/i3-status-travis&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://img.shields.io/codacy/coverage/59f026abe8ce42c28426e3728db24cf2.svg?style=flat-square)](https://www.codacy.com/app/fehmer/i3-status-travis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fehmer/i3-status-travis&amp;utm_campaign=Badge_Coverage)
 
 This module for [i3-status](https://www.npmjs.com/package/i3-status) displays the build status from [Travis CI](https://travis-ci.org) projects. Projects without builds or pending or running builds will be ignored.
 
@@ -102,7 +102,40 @@ The url should not end with a slash.
 
 ### token
 
-If you use Travis Pro or Travis Enterprise you have to set this value. The [Travis API Documentation](https://docs.travis-ci.com/api#authentication) tells you what value to provide here.
+If a token is required for the travis ci server you use you can provide it like this:
+
+``` yaml
+  token: mySecretToken
+```
+
+When you use the public travis ci server you need to provide the token if you get ```Error: Got response code 403``` from the module. 
+
+To obtain a travis ci token you need a github account and a github personal access token. Follow theese steps to create a github personal access token.
+
+- Login into github
+- go to Settings -> Personal access tokens
+- Click create new token
+- Use ```i3-status-travis``` as the token description
+- check this settings
+  + repo:status
+  + repo:deployment
+  + read:org
+  + write:repo-hook
+  + user:email
+- click generate token
+- save the generated personal access token somewhere
+
+To generate the travis ci secret token execute this shell command with your GITHUB_PERSONAL_ACCESS_TOKEN from the step above:
+
+```sh
+curl https://api.travis-ci.org/auth/github -X POST  -d '{"github_token":"GITHUB_PERSONAL_ACCESS_TOKEN"}'  -H "Accept: application/vnd.travis-ci.2+json" -H "User-Agent: MyClient/1.0.0" -H "Content-Type: application/json"
+```
+
+The command should return your travis ci access token like this:
+
+``` json
+{"access_token":"MySecretToken"}
+```
 
 
 ### user
