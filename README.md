@@ -23,10 +23,12 @@ If you use private builds with Travis Pro or Travis Enterprise you need to provi
   - [Show only selected projects](#show-only-selected-projects)
 - [Configuration values](#configuration-values)
   - [url](#url)
+  - [projectUrl](#projecturl)
   - [token](#token)
   - [user](#user)
   - [project](#project)
 - [Modify the output](#modify-the-output)
+- [Modify the reporter](#modify-the-reporter)
 
 <!-- /MarkdownTOC -->
 
@@ -95,10 +97,24 @@ Common configuration values like label and interval are described in the [i3-sta
 
 ### url
 
-Provide the URL the [Travis CI API](https://docs.travis-ci.com/api#overview). For public accessible projects you do not need to provide an url and ```https://api.travis-ci.org``` is used.  If you use Travis Enterprise you have to provide the url of your travis server, e.g. ```https://travis.example.com/api```.
+Provide the URL of the [Travis CI API](https://docs.travis-ci.com/api#overview). For public accessible projects you do not need to provide an url and ```https://api.travis-ci.org``` is used.  If you use Travis Enterprise you have to provide the url of your travis server, e.g. ```https://travis.example.com/api```.
+
+
+``` yaml
+  url: https://api.travis-ci.org
+```
 
 The url should not end with a slash.
 
+### projectUrl
+
+Provide the URL of the [Travis CI Server](https://travis-ci.org/). For public accessible projects you do not need to provide an url and ```https://travis-ci.org``` is used.  If you use Travis Enterprise you have to provide the url of your travis server, e.g. ```https://travis.example.com```.
+
+The project url should not end with a slash.
+
+``` yaml
+  url: https://travis-ci.org
+```
 
 ### token
 
@@ -107,6 +123,8 @@ If a token is required for the travis ci server you use you can provide it like 
 ``` yaml
   token: mySecretToken
 ```
+
+The token allows access to your projects on travis-ci. You should encrypt the value to make more secure. The [i3-status documentation](https://github.com/fehmer/i3-status#a-note-on-security) tells you how to do this.
 
 When you use the public travis ci server you need to provide the token if you get ```Error: Got response code 403``` from the module. 
 
@@ -203,3 +221,17 @@ The default text is **** for successful and **** for failed builds.
       color: '#FFAAAA'
       text: hudson, we have a problem
 ```
+
+## Modify the reporter
+
+If you click on the status a popup will appear (if you added the [i3-status-reporter-html](https://github.com/fehmer/i3-status-reporter-html)), see [i3-status documentation](https://github.com/fehmer/i3-status#reporters).
+
+You can modify the output of the reporter. The following example will show all build projects ordered by the projects name.
+
+``` yaml
+    report:
+      dots: true        # display circles in front of the projects name, default = true
+      showSuccess: true # show failed and successfull builds, default = false, only failed builds are shown
+      sortByName: true  # sort the projects by name, default = false
+```
+

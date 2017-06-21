@@ -27,11 +27,11 @@ describe('Travis Module', function() {
             expect(block.user).to.contain('fehmer');
 
             //expect the status text to be the default values
-            expect(block.status.success).to.equal('');
-            expect(block.status.failure).to.equal('');
+            expect(block.success.text).to.equal('');
+            expect(block.failure.text).to.equal('');
 
             //expect color to be false
-            expect(block.color).to.be.false;
+            expect(block.colorize).to.be.false;
         });
 
         it('should construct with custom url', () => {
@@ -60,8 +60,8 @@ describe('Travis Module', function() {
             var block = new Travis(config);
 
             //expect the custom status texts to be set
-            expect(block.status.success).to.equal('OK');
-            expect(block.status.failure).to.equal('DOOMED');
+            expect(block.success.text).to.equal('OK');
+            expect(block.failure.text).to.equal('DOOMED');
         });
 
         it('should construct with default colors if colorize is enabled', () => {
@@ -74,8 +74,8 @@ describe('Travis Module', function() {
             var block = new Travis(config);
 
             //check colors
-            expect(block.color.success).to.equal('#00FF00');
-            expect(block.color.failure).to.equal('#FF0000');
+            expect(block.success.color).to.equal('#00FF00');
+            expect(block.failure.color).to.equal('#FF0000');
         });
 
         it('should construct with custom colors', () => {
@@ -93,8 +93,8 @@ describe('Travis Module', function() {
             var block = new Travis(config);
 
             //check colors
-            expect(block.color.success).to.equal('#88FF88');
-            expect(block.color.failure).to.equal('#FF8888');
+            expect(block.success.color).to.equal('#88FF88');
+            expect(block.failure.color).to.equal('#FF8888');
         });
 
         it('should fail without user', () => {
@@ -542,6 +542,86 @@ describe('Travis Module', function() {
                 //check output line
                 expect(output.short_text).to.equal('');
                 expect(output.full_text).to.equal('');
+
+                done();
+            });
+        });
+    });
+
+    describe('generateHtmlStatus', function() {
+        it('should handle all success', (done) => {
+
+            //construct block
+            var config = Object.assign({}, options);
+            var block = new Travis(config, {});
+
+            //prepare mock response
+            const expectation = mock('/repos/fehmer', {
+                active: 'true'
+            }, {
+                repos: [{
+                    id: 1,
+                    slug: 'fehmer/i3-status-travis',
+                    last_build_state: 'passed'
+                }, {
+                    id: 2,
+                    slug: 'fehmer/i3-status-gitlab',
+                    last_build_state: null
+                }, {
+                    id: 3,
+                    slug: 'fehmer/i3-status',
+                    last_build_state: ''
+                }]
+            });
+
+
+            execute(block, (output) => {
+                //verify server interaction
+                expectation.verify();
+
+                //check output line
+                var report = block.generateHtmlStatus();
+
+                expect(report.content).to.be.equal('<ul></ul>');
+
+                done();
+            });
+        });
+
+        it('should handle errors', (done) => {
+
+            //construct block
+            var config = Object.assign({}, options);
+            var block = new Travis(config, {});
+
+            //prepare mock response
+            const expectation = mock('/repos/fehmer', {
+                active: 'true'
+            }, {
+                repos: [{
+                    id: 1,
+                    slug: 'fehmer/a-project',
+                    last_build_state: 'passed'
+                }, {
+                    id: 3,
+                    slug: 'fehmer/c-project',
+                    last_build_state: 'failed'
+                }, {
+                    id: 5,
+                    slug: 'fehmer/b-project',
+                    last_build_state: 'failed'
+                }]
+            });
+
+
+            execute(block, (output) => {
+                //verify server interaction
+                expectation.verify();
+
+                //check output line
+                var report = block.generateHtmlStatus();
+
+                expect(report.content).to.be.equal('<ul><li><div class="circle circle-red"></div><a href="https://travis-ci.org/fehmer/c-project">fehmer/c-project</a></li><li><div class="circle circle-red"></div><a href="https://travis-ci.org/fehmer/b-project">fehmer/b-project</a></li></ul>');
 
                 done();
             });
