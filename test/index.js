@@ -24,14 +24,22 @@ describe('Travis Module', function() {
 
             //expect url and user to be set
             expect(block.url).to.equal('https://api.travis-ci.org');
+            expect(block.projectUrl).to.equal('https://travis-ci.org');
             expect(block.user).to.contain('fehmer');
 
             //expect the status text to be the default values
             expect(block.success.text).to.equal('');
             expect(block.failure.text).to.equal('');
+            expect(block.success.color).to.equal('#00FF00');
+            expect(block.failure.color).to.equal('#FF0000');
 
             //expect color to be false
             expect(block.colorize).to.be.false;
+
+            //expect report defaults
+            expect(block.report.dots).to.be.true;
+            expect(block.report.showSuccess).to.be.false;
+            expect(block.report.sortByName).to.be.false;
         });
 
         it('should construct with custom url', () => {
@@ -95,6 +103,26 @@ describe('Travis Module', function() {
             //check colors
             expect(block.success.color).to.equal('#88FF88');
             expect(block.failure.color).to.equal('#FF8888');
+        });
+
+        it('should construct with custom report', () => {
+            //enable colors in config
+            var config = Object.assign({}, options, {
+                report: {
+                    dots: false,
+                    showSuccess: true,
+                    sortByName: true
+
+                }
+            });
+
+            //construct block
+            var block = new Travis(config);
+
+            //check report values
+            expect(block.report.dots).to.be.false;
+            expect(block.report.showSuccess).to.be.true;
+            expect(block.report.sortByName).to.be.true;
         });
 
         it('should fail without user', () => {
@@ -497,7 +525,6 @@ describe('Travis Module', function() {
         });
     });
 
-
     describe('update with token', function() {
         it('should handle success', (done) => {
 
@@ -626,10 +653,40 @@ describe('Travis Module', function() {
                 done();
             });
         });
+
     });
+    describe('#flatten', function() {
+        it('should flatten structure', () => {
 
+            //construct block
+            const config = Object.assign({}, options);
+            const block = new Travis(config, {});
 
+            const result = block.flatten([
+                [{
+                    project: 'fehmer/a-project',
+                    ok: true,
+                    build: true
+                },
+                    {
+                        project: 'fehmer/c-project',
+                        ok: false,
+                        build: true
+                    }], [
+                    {
+                        project: 'fehmer/b-project',
+                        ok: false,
+                        build: true
+                    }]
+            ]
+            );
 
+            expect(result).to.be.an('array').that.has.lengthOf(3);
+            expect(result[0].project).to.equal('fehmer/a-project');
+            expect(result[1].project).to.equal('fehmer/c-project');
+            expect(result[2].project).to.equal('fehmer/b-project');
+        });
+    });
 })
 
 

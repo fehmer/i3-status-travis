@@ -2,15 +2,11 @@
 
 import { EventEmitter } from 'events';
 import request from 'request';
-import defaults from 'lodash.defaultsdeep'
 
 const accept_header = 'application/vnd.travis-ci.2+json';
 const user_agent = 'i3-status-travis/1.0.0'
 
 const defaultParameter = {
-    url: 'https://api.travis-ci.org',
-    projectUrl: 'https://travis-ci.org',
-    colorize: false,
     success: {
         text: '',
         color: '#00FF00'
@@ -27,55 +23,59 @@ const defaultParameter = {
 }
 
 export default class Travis extends EventEmitter {
-    constructor(givenOptions, output) {
-        super();
-        const options = defaults(Object.assign({}, givenOptions), defaultParameter);
-        this.output = Object.assign({}, output);
+    constructor({ //
+            url = 'https://api.travis-ci.org', //
+            projectUrl = 'https://travis-ci.org', //
+            token, //
+            user, //
+            project, //
+            success, //
+            failure, //
+            colorize = (failure && failure.color) || (success && success.color) || false, //
+            report //
+        } = {}, output) {
 
-        //set custom url or use the public travis api
-        this.url = options.url;
-        this.projectUrl = options.projectUrl;
-        this.token = options.token;
+        super();
 
         //user is a mandatary field
-        if (!options.user)
+        if (!user)
             throw new Error('config value user is missing');
-        this.user = this.optionToArray(options.user, 'user');
 
-        //set filter for projects
-        if (options.project) {
-            this.project = this.optionToArray(options.project, 'project');
-        }
+        // set fieldy, apply default parameter
+        Object.assign(this, {
+            output: Object.assign({}, output),
+            url,
+            projectUrl,
+            token,
+            user: this.optionToArray(user, 'user'),
+            project: this.optionToArray(project, 'project'),
+            success: Object.assign({}, defaultParameter.success, success),
+            failure: Object.assign({}, defaultParameter.failure, failure),
+            colorize,
+            report: Object.assign({}, defaultParameter.report, report)
+        });
 
-        this.success = options.success;
-        this.failure = options.failure;
-        this.colorize = options.colorize;
-
-        if ((givenOptions.failure && givenOptions.failure.color) || (givenOptions.success && givenOptions.success.color)) {
-            this.colorize = true;
-        }
-
-
-        this.report = options.report;
-        this.report.userStyle = `.project-green a {color: ${this.success.color}} .project-red a {color: ${this.failure.color}}`;
-        this.report.userStyle += '.circle{width: 1em;height: 1em;float: left;border-radius: 50%;margin-right: .5em;}';
-        this.report.userStyle += `.circle-green {background: ${this.success.color}} .circle-red  {background: ${this.failure.color}}`;
-
+        //set custom css to reporter
+        this.report.userStyle = `.project-green a {color: ${this.success.color}}
+        .project-red a{color: ${this.failure.color}}
+        .circle{width: 1em;height: 1em;float: left;border-radius: 50%;margin-right: .5em;}
+        .circle-green{background: ${this.success.color}}
+        .circle-red{background: ${this.failure.color}}`;
     }
 
     update() {
 
         //prepare one api call per user
-        var calls = this.user.map(user => this.readForUser(user));
+        const calls = this.user.map(user => this.readForUser(user));
 
         //call api
         Promise
             .all(calls)
-            .then((result) => {
-                var allProjects = this.flatten(result);
+            .then(result => {
+                const allProjects = this.flatten(result);
                 this.lastResult = allProjects;
 
-                var brokenProjects = allProjects.filter((project) => {
+                const brokenProjects = allProjects.filter(project => {
                     return project.ok === false;
                 });
 
@@ -99,8 +99,8 @@ export default class Travis extends EventEmitter {
      * set the output of the block
      */
     setOutput(brokenProjects) {
-        var ok = brokenProjects.length == 0;
-        var text = ok ? this.success.text : this.failure.text;
+        const ok = brokenProjects.length == 0;
+        let text = ok ? this.success.text : this.failure.text;
 
         if (!ok && brokenProjects && brokenProjects.length > 1) {
             text += ` (${brokenProjects.length})`;
@@ -137,7 +137,7 @@ export default class Travis extends EventEmitter {
      */
     readForUser(user) {
         return new Promise((resolve, reject) => {
-            var headers = {
+            const headers = {
                 'User-Agent': user_agent,
                 'Accept': accept_header
             }
@@ -146,16 +146,16 @@ export default class Travis extends EventEmitter {
 
             request({
                 url: `${this.url}/repos/${user}?active=true`,
-                headers: headers
+                headers
             }, (error, response, body) => {
                 if (error || response.statusCode != 200) {
                     return reject(error || 'Error: Got response code ' + response.statusCode);
                 }
 
-                var repos = JSON.parse(body);
+                const repos = JSON.parse(body);
                 if (!repos.repos) return reject('result does not contain any repo data');
 
-                var result = repos.repos;
+                let result = repos.repos;
 
                 // filter, if active
                 if (this.project) {
@@ -183,7 +183,9 @@ export default class Travis extends EventEmitter {
      * the string is returned. If the option is an array it will be returned. If neither an Error is thrown.
      */
     optionToArray(option, name) {
-        if (typeof option === 'string') {
+        if (option === undefined) {
+            return undefined;
+        } else if (typeof option === 'string') {
             return Array.of(option);
         } else if (Array.isArray(option)) {
             return option;
@@ -196,37 +198,35 @@ export default class Travis extends EventEmitter {
      * flatten the array of arrays of projects down to a single array of projects
      */
     flatten(multiUserResult) {
-        var result = new Array();
-        multiUserResult.forEach((forUser) => {
-            forUser.forEach((project) => result.push(project))
-        });
-        return result;
+        return multiUserResult.reduce((a, b) => a.concat(Array.isArray(b) ? this.flatten(b) : b), []);
     }
 
     generateHtmlStatus() {
-        var header = this.report.showSuccess ? `Builds on ${this.projectUrl}` : `Failed builds on ${this.projectUrl}`;
-        var projects = this.lastResult.filter(p => p.build == true);
+        const header = this.report.showSuccess ? `Builds on ${this.projectUrl}` : `Failed builds on ${this.projectUrl}`;
+        let projects = this.lastResult.filter(p => p.build == true);
 
         if (this.report.sortByName)
             projects = projects.sort((p1, p2) => p1.project.localeCompare(p2.project));
 
         if (!this.report.showSuccess)
-            projects = projects.filter((p) => !p.ok);
+            projects = projects.filter(p => !p.ok);
 
-        var content = '<ul>';
-        projects.forEach((project) => {
-            var state = project.ok ? 'green' : 'red';
-            if (this.report.dots)
-                content += `<li><div class="circle circle-${state}"></div><a href="${this.projectUrl}/${project.project}">${project.project}</a></li>`;
-            else
-                content += `<li class="project-${state}"><a href="${this.projectUrl}/${project.project}">${project.project}</a></li>`;
+        const list = projects.map(project => this.getHtml(project)).join('');
+        const content = `<ul>${list}</ul>`;
 
-        });
-        content += '</ul>'
         return {
-            header: header,
-            content: content,
+            header,
+            content,
             userStyle: this.report.userStyle
         };
     }
+
+    getHtml(project) {
+        const state = project.ok ? 'green' : 'red';
+        if (this.report.dots)
+            return `<li><div class="circle circle-${state}"></div><a href="${this.projectUrl}/${project.project}">${project.project}</a></li>`;
+        else
+            return `<li class="project-${state}"><a href="${this.projectUrl}/${project.project}">${project.project}</a></li>`;
+    }
+
 }
