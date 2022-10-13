@@ -1,8 +1,8 @@
 'use strict';
 
 import { expect } from 'chai';
-import server from 'mockyeah';
-import Travis from './../lib/index';
+import nock from 'nock'
+import Travis from './../src/index.js';
 import request from 'request';
 
 const options = {
@@ -11,11 +11,14 @@ const options = {
     colorize: true
 };
 
-describe('Travis Module', function() {
+describe('Travis Module', ()=> {
     // remove service mocks after each test
-    afterEach(() => server.reset());
+    afterEach(() => {
+        nock.isDone();
+        nock.cleanAll();
+    });
 
-    describe('#constructor', function() {
+    describe('#constructor', ()=> {
         it('should construct with defaults', () => {
             //construct block
             var block = new Travis({
@@ -127,7 +130,7 @@ describe('Travis Module', function() {
 
         it('should fail without user', () => {
 
-            expect(function() {
+            expect(()=> {
                 var client = new Travis({});
             }).to.throw('config value user is missing');
         });
@@ -141,7 +144,7 @@ describe('Travis Module', function() {
             });
 
             //construct block
-            expect(function() {
+            expect(()=> {
                 var client = new Travis(config);
             }).to.throw('config value user must be a string or an array');
         });
@@ -185,7 +188,7 @@ describe('Travis Module', function() {
             });
 
             //construct block
-            expect(function() {
+            expect(()=> {
                 var client = new Travis(config);
             }).to.throw('config value project must be a string or an array');
         });
@@ -207,8 +210,8 @@ describe('Travis Module', function() {
     });
 
 
-    describe('update for all projects', function() {
-        it('should handle success', (done) => {
+    describe('update for all projects', ()=> {
+        it('should handle success',  async () => {
 
             //construct block
             var config = Object.assign({}, options);
@@ -233,21 +236,17 @@ describe('Travis Module', function() {
                 }]
             });
 
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal('');
-                expect(output.full_text).to.equal('');
-                expect(output.color).to.equal('#00FF00');
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal('');
+            expect(output.full_text).to.equal('');
+            expect(output.color).to.equal('#00FF00');
         });
 
-        it('should handle failures', (done) => {
+        it('should handle failures', async() => {
 
             //construct block
             var config = Object.assign({}, options);
@@ -272,21 +271,17 @@ describe('Travis Module', function() {
                 }]
             });
 
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal('');
-                expect(output.full_text).to.equal('');
-                expect(output.color).to.equal('#FF0000');
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal('');
+            expect(output.full_text).to.equal('');
+            expect(output.color).to.equal('#FF0000');
         });
 
-        it('should handle multiple failures', (done) => {
+        it('should handle multiple failures', async() => {
 
             //construct block
             var config = Object.assign({}, options);
@@ -311,21 +306,17 @@ describe('Travis Module', function() {
                 }]
             });
 
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal(' (2)');
-                expect(output.full_text).to.equal(' (2)');
-                expect(output.color).to.equal('#FF0000');
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal(' (2)');
+            expect(output.full_text).to.equal(' (2)');
+            expect(output.color).to.equal('#FF0000');
         });
 
-        it('should handle errors', (done) => {
+        it('should handle errors', async() => {
 
             //construct block
             var config = Object.assign({}, options);
@@ -335,21 +326,17 @@ describe('Travis Module', function() {
             const expectation = mock('/repos/fehmer', {
                 active: 'true'
             });
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal('Error: Got response code 404');
-                expect(output.full_text).to.equal('Error: Got response code 404');
-                expect(output.color).to.be.undefined;
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal('Error: Got response code 404');
+            expect(output.full_text).to.equal('Error: Got response code 404');
+            expect(output.color).to.be.undefined;
         });
 
-        it('should handle invalid results', (done) => {
+        it('should handle invalid results', async() => {
 
             //construct block
             var config = Object.assign({}, options);
@@ -360,25 +347,21 @@ describe('Travis Module', function() {
                 active: 'true'
             }, {});
 
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal('result does not contain any repo data');
-                expect(output.full_text).to.equal('result does not contain any repo data');
-                expect(output.color).to.be.undefined;
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal('result does not contain any repo data');
+            expect(output.full_text).to.equal('result does not contain any repo data');
+            expect(output.color).to.be.undefined;
         });
 
     });
 
 
-    describe('update for filtered projects', function() {
-        it('should handle success', (done) => {
+    describe('update for filtered projects', ()=> {
+        it('should handle success', async() => {
 
             //construct block, filter two projects
             var config = Object.assign({}, options, {
@@ -405,20 +388,16 @@ describe('Travis Module', function() {
                 }]
             });
 
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal('');
-                expect(output.full_text).to.equal('');
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal('');
+            expect(output.full_text).to.equal('');
         });
 
-        it('should handle failures', (done) => {
+        it('should handle failures', async() => {
 
             //construct block, filter two projects
             var config = Object.assign({}, options, {
@@ -445,21 +424,17 @@ describe('Travis Module', function() {
                 }]
             });
 
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal('');
-                expect(output.full_text).to.equal('');
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal('');
+            expect(output.full_text).to.equal('');
         });
 
 
-        it('should handle multiple failures', (done) => {
+        it('should handle multiple failures', async() => {
 
             //construct block, filter two projects
             var config = Object.assign({}, options, {
@@ -486,20 +461,16 @@ describe('Travis Module', function() {
                 }]
             });
 
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal(' (2)');
-                expect(output.full_text).to.equal(' (2)');
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal(' (2)');
+            expect(output.full_text).to.equal(' (2)');
         });
 
-        it('should handle errors', (done) => {
+        it('should handle errors', async() => {
 
             //construct block, filter two projects
             var config = Object.assign({}, options, {
@@ -511,22 +482,18 @@ describe('Travis Module', function() {
             const expectation = mock('/repos/fehmer', {
                 active: 'true'
             });
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
-
-                //check output line
-                expect(output.short_text).to.equal('Error: Got response code 404');
-                expect(output.full_text).to.equal('Error: Got response code 404');
-
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal('Error: Got response code 404');
+            expect(output.full_text).to.equal('Error: Got response code 404');
         });
     });
 
-    describe('update with token', function() {
-        it('should handle success', (done) => {
+    describe('update with token', ()=> {
+        it('should handle success', async() => {
 
             //construct block, filter two projects
             var config = Object.assign({}, options, {
@@ -535,48 +502,25 @@ describe('Travis Module', function() {
             var block = new Travis(config, {});
 
             //prepare mock response
-            const expectation = server
-                .get('/repos/fehmer', {
-                    json: {
-                        repos: [{
-                            id: 1,
-                            slug: 'fehmer/i3-status-travis',
-                            last_build_state: 'passed'
-                        }, {
-                            id: 2,
-                            slug: 'fehmer/i3-status-gitlab',
-                            last_build_state: null
-                        }, {
-                            id: 3,
-                            slug: 'fehmer/i3-status',
-                            last_build_state: ''
-                        }]
-                    }
-                })
-                .expect()
-                .params({
-                    active: 'true'
-                })
-                .header('User-Agent', 'i3-status-travis/1.0.0')
-                .header('Accept', 'application/vnd.travis-ci.2+json')
-                .header('Authorization', 'token mySecret')
-                .once();
+            const expectation = mock('/repos/fehmer', 
+                /* query */ { active: 'true' },
+                /* result */ { repos: [] }, 
+                /* additonalHeaders: */ { 'Authorization':'token mySecret'}
+            );
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
 
-                //check output line
-                expect(output.short_text).to.equal('');
-                expect(output.full_text).to.equal('');
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-                done();
-            });
+            //check output line
+            expect(output.short_text).to.equal('');
+            expect(output.full_text).to.equal('');
         });
     });
 
-    describe('generateHtmlStatus', function() {
-        it('should handle all success', (done) => {
+    describe('generateHtmlStatus', ()=> {
+        it('should handle all success', async() => {
 
             //construct block
             var config = Object.assign({}, options);
@@ -601,21 +545,16 @@ describe('Travis Module', function() {
                 }]
             });
 
+            const output = await execute(block);
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
+            //check output line
+            var report = block.generateHtmlStatus();
 
-                //check output line
-                var report = block.generateHtmlStatus();
-
-                expect(report.content).to.be.equal('<ul></ul>');
-
-                done();
-            });
+            expect(report.content).to.be.equal('<ul></ul>');
         });
 
-        it('should handle errors', (done) => {
+        it('should handle errors', async() => {
 
             //construct block
             var config = Object.assign({}, options);
@@ -640,22 +579,18 @@ describe('Travis Module', function() {
                 }]
             });
 
+            const output = await execute(block);
+            //verify server interaction
+            expectation.isDone();
 
-            execute(block, (output) => {
-                //verify server interaction
-                expectation.verify();
+            //check output line
+            var report = block.generateHtmlStatus();
 
-                //check output line
-                var report = block.generateHtmlStatus();
-
-                expect(report.content).to.be.equal('<ul><li><div class="circle circle-red"></div><a href="https://travis-ci.org/fehmer/c-project">fehmer/c-project</a></li><li><div class="circle circle-red"></div><a href="https://travis-ci.org/fehmer/b-project">fehmer/b-project</a></li></ul>');
-
-                done();
-            });
+            expect(report.content).to.be.equal('<ul><li><div class="circle circle-red"></div><a href="https://travis-ci.org/fehmer/c-project">fehmer/c-project</a></li><li><div class="circle circle-red"></div><a href="https://travis-ci.org/fehmer/b-project">fehmer/b-project</a></li></ul>');
         });
 
     });
-    describe('#flatten', function() {
+    describe('#flatten', ()=> {
         it('should flatten structure', () => {
 
             //construct block
@@ -690,43 +625,33 @@ describe('Travis Module', function() {
 })
 
 
-//copied from i3-status
-function execute(block, verify) {
-    block.name = block.constructor.name;
-
-    block.on('updated', function(target, output) {
-        clearInterval(block.interval);
-
-        expect(target.name).to.equal(block.name);
-        verify(output);
-    });
-
-    //simulate set interval, will never fire
-    block._interval = 10000;
-    block.interval = setInterval(() => {
+async function execute(block) {
+    return await new Promise(resolve => {
         block.update();
-    }, block._interval);
-
-    block.update();
+        block.on("updated", async(target, output) => {
+            resolve(output);
+        });
+    });
 }
 
-function mock(url, params, response) {
-    var result;
+function mock(url, params, response, additionalHeaders) {
+    var reqheaders = {
+        'User-Agent': 'i3-status-travis/2.0.0',
+        'Accept': 'application/vnd.travis-ci.2+json',
+        ...additionalHeaders
+    }
+    var result = nock('http://localhost:4001/', {
+        reqheaders    
+    })
+    .get(url)
+    .query(params)
+    .delayConnection(20);
 
     if (response) {
-        result = server.get(url, {
-            json: response
-        });
+        result = result.reply(200, response);
     } else {
-        result = server.get(url, {
-            status: 404
-        });
+        result = result.reply(404);
     }
 
-    return result
-        .expect()
-        .params(params)
-        .header('User-Agent', 'i3-status-travis/1.0.0')
-        .header('Accept', 'application/vnd.travis-ci.2+json')
-        .once();
+    return result;
 }

@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
 import request from 'request';
 
 const accept_header = 'application/vnd.travis-ci.2+json';
-const user_agent = 'i3-status-travis/1.0.0'
+const user_agent = 'i3-status-travis/2.0.0'
 
 const defaultParameter = {
     success: {
