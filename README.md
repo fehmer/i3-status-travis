@@ -2,11 +2,8 @@
 
 Monitor travis-ci builds in your i3-status bar.
 
-[![npm version](https://img.shields.io/npm/v/i3-status-travis.svg?style=flat-square)](https://www.npmjs.com/package/i3-status-travis)
-[![Dependency Status](https://img.shields.io/gemnasium/fehmer/i3-status-travis.svg?style=flat-square)](https://gemnasium.com/github.com/fehmer/i3-status-travis)
-[![Build Status](https://img.shields.io/travis/fehmer/i3-status-travis.svg?style=flat-square)](https://travis-ci.org/fehmer/i3-status-travis)
-[![Codacy Badge](https://img.shields.io/codacy/grade/59f026abe8ce42c28426e3728db24cf2.svg?style=flat-square)](https://www.codacy.com/app/fehmer/i3-status-travis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fehmer/i3-status-travis&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://img.shields.io/codacy/coverage/59f026abe8ce42c28426e3728db24cf2.svg?style=flat-square)](https://www.codacy.com/app/fehmer/i3-status-travis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fehmer/i3-status-travis&amp;utm_campaign=Badge_Coverage)
+[![npm version](https://img.shields.io/npm/v/i3-status-travis.svg?style=flat-square)](https://www.npmjs.com/package/i3-status-travis) 
+[![Node.js CI](https://github.com/fehmer/i3-status-travis/actions/workflows/node.js.yml/badge.svg)](https://github.com/fehmer/i3-status-travis/actions/workflows/node.js.yml)
 
 This module for [i3-status](https://www.npmjs.com/package/i3-status) displays the build status from [Travis CI](https://travis-ci.org) projects. Projects without builds or pending or running builds will be ignored.
 
@@ -14,7 +11,7 @@ If you use private builds with Travis Pro or Travis Enterprise you need to provi
 
 
 ## Table of content
-<!-- MarkdownTOC -->
+<!-- MarkdownTOC autolink="true" -->
 
 - [Installation](#installation)
 - [Example configurations](#example-configurations)

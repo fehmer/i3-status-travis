@@ -1,24 +1,21 @@
 {
   "name": "i3-status-travis",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Monitor travis-ci builds in your i3-status bar",
-  "main": "lib/index.js",
+  "main": "src/index.js",
+  "type": "module",
   "url": "https://github.com/fehmer/i3-status-travis/issues",
   "scripts": {
-    "prepublish": "npm run compile",
-    "compile": "babel src/ -d lib -s",
-    "test": "npm run compile && node_modules/mocha/bin/mocha --compilers js:babel-register test --recursive --reporter gitlablist-mocha",
-    "watch": "npm run compile && (babel -w src/ -d lib -s &) && node_modules/mocha/bin/mocha --compilers js:babel-register test --recursive  --reporter min --watch",
-    "cover": "npm run compile && istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel-core/register --colors --reporter dot test/ --recursive"
+    "test": "mocha test --recursive",
+    "watch": "mocha test --recursive --reporter min --watch --parallel",
+    "coverage": "c8 npm run test"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/fehmer/i3-status-travis.git"
   },
-  "babel": {
-    "presets": [
-      "latest"
-    ]
+  "engines": {
+    "node": ">=14.0.0"
   },
   "keywords": [
     "i3",
@@ -34,13 +31,12 @@
     "request": "^2.79.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-preset-latest": "^6.16.0",
-    "chai": "^4.0.2",
-    "codacy-coverage": "^2.0.0",
-    "gitlablist-mocha": "^1.0.2",
-    "istanbul": "^1.1.0-alpha.1",
-    "mocha": "^3.2.0",
-    "mockyeah": "^0.15.6"
+    "c8": "^7.12.0",
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0",
+    "nock": "^13.2.9"
+  },
+  "optionalDependencies": {
+    "fsevents": "*"
   }
 }
