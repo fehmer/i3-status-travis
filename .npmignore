@@ -2,4 +2,6 @@ node_modules
 test
 .gitignore
 .npmignore
+.github
+.c8rc
 coverage
